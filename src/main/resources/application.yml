@@ -1,3 +1,3 @@
 kakao:
-  client_id: 8427ba9114a5ecb09621710469748441
+  client_id: client_id 작성!!
   redirect_uri: http://localhost:8080/callback
