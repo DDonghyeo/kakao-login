@@ -1,4 +1,4 @@
-package com.kakaologin.demo.Dto;
+package com.kakaologin.demo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
