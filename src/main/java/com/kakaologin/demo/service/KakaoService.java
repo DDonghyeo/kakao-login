@@ -5,6 +5,7 @@ import com.kakaologin.demo.dto.KakaoUserInfoResponseDto;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -18,17 +19,26 @@ import reactor.core.publisher.Mono;
 @Service
 public class KakaoService {
 
-    @Value("${kakao.client_id}")
     private String client_id;
+    private final String KATUH_TOKEN_URL;
+    private final String KAUTH_USER_URL;
+
+    @Autowired
+    public KakaoService(@Value("${kakao.client_id}") String client_id) {
+        this.client_id = client_id;
+        this.KATUH_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
+        this.KAUTH_USER_URL = "https://kapi.kakao.com/v2/user/me";
+    }
 
     public String getAccessTokenFromKakao(String code) {
 
-        String urlString = "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&" +
-                "client_id="+ client_id+
-                "&code=" + code;
-
         KakaoTokenResponseDto kakaoTokenResponseDto = WebClient.create().post()
-                .uri(urlString)
+                .uri(uriBuilder -> uriBuilder
+                        .path(KATUH_TOKEN_URL)
+                        .queryParam("grant_type", "authorization_code")
+                        .queryParam("client_id", client_id)
+                        .queryParam("code", code)
+                        .build())
                 .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
                 .retrieve()
                 //TODO : Custom Exception
@@ -52,11 +62,11 @@ public class KakaoService {
 
     public KakaoUserInfoResponseDto getUserInfo(String accessToken) {
 
-        String urlString = "https://kapi.kakao.com/v2/user/me";
-
         KakaoUserInfoResponseDto userInfo = WebClient.create()
                 .get()
-                .uri(urlString)
+                .uri(uriBuilder -> uriBuilder
+                        .path(KAUTH_USER_URL)
+                        .build())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken) // access token 인가
                 .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
                 .retrieve()
